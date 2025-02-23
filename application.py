@@ -3,7 +3,7 @@ from flask import Flask, session, render_template, request
 from flask_session import Session
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import scoped_session, sessionmaker
-
+import requests
 
 app = Flask(__name__)
 
@@ -95,14 +95,21 @@ def search():
 
 @app.route("/book/<int:book_id>", methods=["POST","GET"])
 def bookpage(book_id):
+    #initialize book and get google api reviews
+    book = db.execute(text("SELECT * FROM books WHERE id = :id"), {"id":book_id}).fetchone()
+    isbn = book.isbn
+    res = requests.get("https://www.googleapis.com/books/v1/volumes", params={"q": f"isbn:{isbn}"})
+    json = (res.json())
+    average_rating = json.get("items", [{}])[0].get("volumeInfo", {}).get("averageRating", "no ratings found on google api.")
+    number_ratings = json.get("items", [{}])[0].get("volumeInfo", {}).get("ratingsCount", "no ratings found on google api.")
+
     if request.method == "GET":
-        book = db.execute(text("SELECT * FROM books WHERE id = :id"), {"id":book_id}).fetchone()
         reviews = db.execute(text("SELECT * FROM reviews WHERE book_id = :id"), {"id":book_id}).fetchall()
-        return render_template("bookpage.html", book=book, username=session["username"], reviews=reviews)
+        return render_template("bookpage.html", book=book, username=session["username"], reviews=reviews, average_rating=average_rating, number_ratings=number_ratings)
     if request.method == "POST":
         review = request.form.get("review")
         username = session["username"]
-        book = db.execute(text("SELECT * FROM books WHERE id = :id"), {"id":book_id}).fetchone()
+        
         #test if review by this user already exists, mostly same as testing for usernames when regitsering
         existing_review= db.execute(text("SELECT * FROM reviews WHERE book_id =:book_id AND username = :username"), {"book_id":book_id, "username":username}).fetchone()
         if existing_review:
@@ -111,8 +118,9 @@ def bookpage(book_id):
             db.execute(text("INSERT INTO reviews (book_id, username, review) VALUES (:book_id, :username, :review)"), {"book_id":book_id, "username":username, "review":review})
             db.commit()
             message = "review added."
+
         reviews = db.execute(text("SELECT * FROM reviews WHERE book_id = :id"), {"id":book_id}).fetchall()
-        return render_template("bookpage.html", book=book, username=session["username"], reviews=reviews, message=message)
+        return render_template("bookpage.html", book=book, username=session["username"], reviews=reviews, message=message, average_rating=average_rating, number_ratings=number_ratings)
 
 if __name__ == "__main__":
     app.run(debug=True)

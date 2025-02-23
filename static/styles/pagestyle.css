@@ -41,5 +41,9 @@ body {
 		display: inline-block;
 		background-color: #6fa404;
 	}
+
+	.warning {
+		color: red;
+	}
 }
 

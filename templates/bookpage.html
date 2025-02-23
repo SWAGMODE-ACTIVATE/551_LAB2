@@ -27,11 +27,21 @@
         <p>isbn number - {{book.isbn}}</p>
         <p>&nbsp;</p>
         <form id="reviewbox" action = "{{ url_for('bookpage', book_id=book.id) }}" method="POST">
-          <input type="text" name="review" autocomplete="off" placeholder="write a review">
+          <input type="text" name="review" autocomplete="off" placeholder="write a review and choose a rating from 1(bad) to 5(good)">
+          <select name="ratingnum">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+          </select>
           <button>submit</button>
         </form>
-        <p>{{message}}</p>
-        <h3>reviews</h3>
+        <p class="warning">{{message}}</p>
+        <h3>google books api reviews</h3>
+        <p>average rating: {{average_rating}}</p>
+        <p>number of ratings: {{number_ratings}}</p>
+        <h3>user reviews</h3>
         <ul>
           {% for review in reviews %}
             <li>

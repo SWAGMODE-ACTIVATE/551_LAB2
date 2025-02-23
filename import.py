@@ -43,8 +43,8 @@ CREATE TABLE IF NOT EXISTS reviews (
     id SERIAL PRIMARY KEY,
     book_id INTEGER REFERENCES books(id) ON DELETE CASCADE,
     username TEXT NOT NULL,
-    review TEXT NOT NULL
-
+    review TEXT NOT NULL,
+    rating INTEGER NOT NULL
 );
 """)
 
