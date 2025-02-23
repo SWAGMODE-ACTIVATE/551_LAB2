@@ -48,6 +48,11 @@ CREATE TABLE IF NOT EXISTS reviews (
 );
 """)
 
+#testing smth, ignore
+#gemini_key = os.getenv("GEMINI_KEY")
+#print(gemini_key)
+
+
 #optional deletion and re-initializatoin of tables
 yesno = input("type 1 to delete all tables and re-initialize them ")
 if yesno == "1":

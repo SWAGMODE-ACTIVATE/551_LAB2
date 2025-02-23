@@ -95,17 +95,45 @@ def search():
 
 @app.route("/book/<int:book_id>", methods=["POST","GET"])
 def bookpage(book_id):
+    #Get GEMINI google api key from enviornment varibales
+    gemini_key = os.environ["GEMINI_KEY"]
+
     #initialize book and get google api reviews
     book = db.execute(text("SELECT * FROM books WHERE id = :id"), {"id":book_id}).fetchone()
     isbn = book.isbn
     res = requests.get("https://www.googleapis.com/books/v1/volumes", params={"q": f"isbn:{isbn}"})
     json = (res.json())
-    average_rating = json.get("items", [{}])[0].get("volumeInfo", {}).get("averageRating", "no ratings found on google api.")
-    number_ratings = json.get("items", [{}])[0].get("volumeInfo", {}).get("ratingsCount", "no ratings found on google api.")
+    #check if theres any ratings
+    try:
+        number_ratings = json["items"][0]["volumeInfo"]["ratingsCount"]
+        average_rating = json["items"][0]["volumeInfo"]["averageRating"]
+    except (KeyError, IndexError):
+        number_ratings = "no ratings found on google books api."
+        average_rating = "no ratings found on google books api."    
+
+    try:
+        bookapidesc = json["items"][0]['volumeInfo']["description"]
+    except:
+        bookapidesc = "no description found on google books api."
+ 
+    #gemini api fetch, the rawdata is pasted from lab page
+    rawdata = {
+        "contents": [{
+            "parts": [
+                {
+                    "text": f"Summarize this text using less than 50 words: {bookapidesc}"
+                }
+            ]
+        }]
+    }
+    gemini_res = requests.post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent", params={"key":gemini_key}, headers={"Content-Type":"application/json"}, json=rawdata)
+    gemini_json = (gemini_res.json())
+    gemini_json = gemini_json["candidates"][0]["content"]["parts"][0]["text"]
+    
 
     if request.method == "GET":
         reviews = db.execute(text("SELECT * FROM reviews WHERE book_id = :id"), {"id":book_id}).fetchall()
-        return render_template("bookpage.html", book=book, username=session["username"], reviews=reviews, average_rating=average_rating, number_ratings=number_ratings)
+        return render_template("bookpage.html", book=book, username=session["username"], reviews=reviews, average_rating=average_rating, number_ratings=number_ratings, gemini_json=gemini_json)
     if request.method == "POST":
         review = request.form.get("review")
         ratingnum = request.form.get("ratingnum")
@@ -121,7 +149,7 @@ def bookpage(book_id):
             message = "review added."
 
         reviews = db.execute(text("SELECT * FROM reviews WHERE book_id = :id"), {"id":book_id}).fetchall()
-        return render_template("bookpage.html", book=book, username=session["username"], reviews=reviews, message=message, average_rating=average_rating, number_ratings=number_ratings)
+        return render_template("bookpage.html", book=book, username=session["username"], reviews=reviews, message=message, average_rating=average_rating, number_ratings=number_ratings, gemini_json=gemini_json)
 
 if __name__ == "__main__":
     app.run(debug=True)

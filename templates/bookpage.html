@@ -21,13 +21,13 @@
             </div>
         </div>
 
-
         <h1>{{book.title}}</h1>
         <h3>by {{book.author}}, {{book.year}}</h3>
         <p>isbn number - {{book.isbn}}</p>
-        <p>&nbsp;</p>
+        <p>{{gemini_json}}</p>
+
         <form id="reviewbox" action = "{{ url_for('bookpage', book_id=book.id) }}" method="POST">
-          <input type="text" name="review" autocomplete="off" placeholder="write a review and choose a rating from 1(bad) to 5(good)">
+          <input type="text" name="review" autocomplete="off" placeholder="write a review and choose a rating from 1 (bad) to 5 (good)">
           <select name="ratingnum">
             <option value="1">1</option>
             <option value="2">2</option>
