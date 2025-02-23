@@ -45,7 +45,7 @@
         <ul>
           {% for review in reviews %}
             <li>
-              <p class="review">{{review.username}} says: {{review.review}}</p>
+              <p class="review">{{review.username}} gave {{review.rating}} stars and said: {{review.review}}</p>
             </li>
           {% endfor %}
         </ul>

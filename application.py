@@ -108,6 +108,7 @@ def bookpage(book_id):
         return render_template("bookpage.html", book=book, username=session["username"], reviews=reviews, average_rating=average_rating, number_ratings=number_ratings)
     if request.method == "POST":
         review = request.form.get("review")
+        ratingnum = request.form.get("ratingnum")
         username = session["username"]
         
         #test if review by this user already exists, mostly same as testing for usernames when regitsering
@@ -115,7 +116,7 @@ def bookpage(book_id):
         if existing_review:
             message = "you may only create one review per book on your account."
         else:
-            db.execute(text("INSERT INTO reviews (book_id, username, review) VALUES (:book_id, :username, :review)"), {"book_id":book_id, "username":username, "review":review})
+            db.execute(text("INSERT INTO reviews (book_id, username, review, rating) VALUES (:book_id, :username, :review, :rating)"), {"book_id":book_id, "username":username, "review":review, "rating":ratingnum})
             db.commit()
             message = "review added."
 
