@@ -103,10 +103,16 @@ def bookpage(book_id):
         review = request.form.get("review")
         username = session["username"]
         book = db.execute(text("SELECT * FROM books WHERE id = :id"), {"id":book_id}).fetchone()
-        db.execute(text("INSERT INTO reviews (book_id, username, review) VALUES (:book_id, :username, :review)"), {"book_id":book_id, "username":username, "review":review})
-        db.commit()
+        #test if review by this user already exists, mostly same as testing for usernames when regitsering
+        existing_review= db.execute(text("SELECT * FROM reviews WHERE book_id =:book_id AND username = :username"), {"book_id":book_id, "username":username}).fetchone()
+        if existing_review:
+            message = "you may only create one review per book on your account."
+        else:
+            db.execute(text("INSERT INTO reviews (book_id, username, review) VALUES (:book_id, :username, :review)"), {"book_id":book_id, "username":username, "review":review})
+            db.commit()
+            message = "review added."
         reviews = db.execute(text("SELECT * FROM reviews WHERE book_id = :id"), {"id":book_id}).fetchall()
-        return render_template("bookpage.html", book=book, username=session["username"], reviews=reviews)
+        return render_template("bookpage.html", book=book, username=session["username"], reviews=reviews, message=message)
 
 if __name__ == "__main__":
     app.run(debug=True)
