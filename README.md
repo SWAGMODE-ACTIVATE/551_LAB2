@@ -1,5 +1,8 @@
-# 551_LAB1
+# 551_LAB2
 the book search website works using three databases - reviews, users, and books, all being created and filled using the flask applicatoin as wel las import.py. It contains a login/logout page, a serach page, and a template page for every book.
+additionaly, in lab 2, there is added implementation for google books api and google gemini ai api, the review system is slightly tweaked, and an api method is added to the application.
+users can now only review once per book per account, and the /api/isbn route will return a json dictionary of all relevant info when a get query is sent using a valid isbn.
+the rest of the application remains mostly unchanged from lab1, save the review talbe now having an extra column for star rating.
 
 Files-
 /static/pagestyle.css - this is the css stylesheet for all of the template pages
